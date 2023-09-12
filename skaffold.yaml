@@ -1,0 +1,14 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: crypto-market-recorder
+build:
+  artifacts:
+    - image: crypto-market-recorder
+      context: ./
+      docker:
+        dockerfile: Dockerfile
+manifests:
+  kustomize:
+    paths:
+      - ./k8s
