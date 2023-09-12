@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+  labels:
+    app: app
+spec:
+  selector:
+    matchLabels:
+      app: app
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      volumes:
+        - name: postgres-pv
+          persistentVolumeClaim:
+            claimName: influxdb-pvc
+      containers:
+        - name: app
+          image: crypto-market-recorder
+          envFrom:
+            - secretRef:
+                name: secrets
+            - configMapRef:
+                name: config
+          volumeMounts:
+            - mountPath: /var/lib/influxdb2
+              name: postgres-pv
+          resources:
+            requests:
+              memory: 100Mi
+              cpu: 100m
+            limits:
+              memory: 200Mi
+              cpu: 200m

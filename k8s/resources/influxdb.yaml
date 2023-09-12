@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: influxdb-deployment
+  labels:
+    app: influxdb
+spec:
+  selector:
+    matchLabels:
+      app: influxdb
+  template:
+    metadata:
+      labels:
+        app: influxdb
+    spec:
+      containers:
+        - name: influxdb
+          image: influxdb:2.7
+          envFrom:
+            - secretRef:
+                name: secrets
+            - configMapRef:
+                name: config
+          ports:
+            - containerPort: 8086
+          resources:
+            requests:
+              memory: 100Mi
+              cpu: 100m
+            limits:
+              memory: 200Mi
+              cpu: 200m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: influxdb-service
+spec:
+  selector:
+    app: influxdb
+  ports:
+    - name: influxdb-service-tcp
+      protocol: TCP
+      port: 8086
+      targetPort: 8086
+    - name: influxdb-service-udp
+      protocol: UDP
+      port: 8086
+      targetPort: 8086

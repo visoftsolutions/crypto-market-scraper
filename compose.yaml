@@ -1,0 +1,21 @@
+services:
+  influxdb:
+    container_name: cms-influxdb
+    hostname: cms-influxdb
+    image: influxdb:2.7
+    env_file:
+      - ./.env
+    volumes:
+      - ./influxdb:/var/lib/influxdb2
+    ports:
+      - 8086:8086
+
+  cms-app:
+    container_name: cms-app
+    hostname: cms-app
+    build:
+      context: .
+    depends_on:
+      - influxdb
+    env_file:
+      - ./.env
