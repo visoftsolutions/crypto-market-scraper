@@ -1,4 +1,5 @@
 from influxdb_client import InfluxDBClient, Point
+from influxdb_client.client.write_api import SYNCHRONOUS
 from datetime import datetime
 
 
@@ -18,7 +19,7 @@ class InfluxDb:
         self.measurement_name = measurement_name
         self.tags = tags
         self.query_api = self.client.query_api()
-        self.write_api = self.client.write_api()
+        self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
         self.create_bucket_if_not_exist()
 
     def create_bucket_if_not_exist(self):
