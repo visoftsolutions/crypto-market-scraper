@@ -4,7 +4,7 @@ metadata:
   name: crypto-market-recorder
 build:
   artifacts:
-    - image: crypto-market-recorder
+    - image: registry.internal.visoft.solutions/crypto-market-recorder
       context: ./
       docker:
         dockerfile: Dockerfile
