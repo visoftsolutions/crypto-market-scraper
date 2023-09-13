@@ -10,12 +10,54 @@ services:
     ports:
       - 8086:8086
 
-  cms-app:
-    container_name: cms-app
-    hostname: cms-app
+  cms-binance:
+    container_name: cms-binance
+    hostname: cms-binance
     build:
       context: .
     depends_on:
       - influxdb
     env_file:
       - ./.env
+    command:
+      [
+        "-x",
+        "binance",
+        "-m",
+        "trades",
+        "-s",
+        "BTC/USDT",
+        "ETH/USDT",
+        "MATIC/USDT",
+        "DOT/USDT",
+        "WAVES/USDT",
+        "ADA/USDT",
+        "FTM/USDT",
+        "-l",
+        "1000",
+      ]
+
+  cms-kraken:
+    container_name: cms-kraken
+    hostname: cms-kraken
+    build:
+      context: .
+    depends_on:
+      - influxdb
+    env_file:
+      - ./.env
+    command:
+      [
+        "-x",
+        "kraken",
+        "-m",
+        "trades",
+        "-s",
+        "BTC/USDT",
+        "ETH/USDT",
+        "MATIC/USDT",
+        "DOT/USDT",
+        "ADA/USDT",
+        "-l",
+        "1000",
+      ]

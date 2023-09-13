@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app-deployment
+  name: binance-deployment
   labels:
-    app: app
+    app: binance
 spec:
   selector:
     matchLabels:
-      app: app
+      app: binance
   template:
     metadata:
       labels:
-        app: app
+        app: binance
     spec:
       volumes:
-        - name: postgres-pv
+        - name: influxdb-pv
           persistentVolumeClaim:
             claimName: influxdb-pvc
       containers:
-        - name: app
+        - name: binance
           image: crypto-market-recorder
           envFrom:
             - secretRef:
@@ -27,7 +27,26 @@ spec:
                 name: config
           volumeMounts:
             - mountPath: /var/lib/influxdb2
-              name: postgres-pv
+              name: influxdb-pv
+          command:
+            [
+              "-x",
+              "binance",
+              "-m",
+              "trades",
+              "-s",
+              "BTC/USDT",
+              "ETH/USDT",
+              "MATIC/USDT",
+              "DOT/USDT",
+              "WAVES/USDT",
+              "ADA/USDT",
+              "FTM/USDT",
+              "-d",
+              "2023-09-13 09:00:00",
+              "-l",
+              "1000",
+            ]
           resources:
             requests:
               memory: 100Mi

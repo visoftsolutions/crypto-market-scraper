@@ -5,7 +5,7 @@ namespace: crypto-market-recorder
 
 resources:
   - ./resources/influxdb.yaml
-  - ./resources/app.yaml
+  - ./resources/binance.yaml
 
 secretGenerator:
   - name: secrets

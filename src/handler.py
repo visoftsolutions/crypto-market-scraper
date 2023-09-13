@@ -1,6 +1,6 @@
-import ccxt.pro as ccxt
+from ccxt.pro import Exchange
 import logging
-from asyncio import sleep, TimeoutError
+from asyncio import sleep
 from datetime import datetime
 from dataclasses import dataclass
 from db import InfluxDb
@@ -23,7 +23,7 @@ async def record_exchange(
     logger: logging.Logger,
     influxdb: InfluxDb,
     desired_amount: float,
-    exchange: ccxt.Exchange,
+    exchange: Exchange,
     symbol: str,
     since: int | None = None,
     limit: int | None = None,
@@ -56,8 +56,9 @@ async def record_exchange(
                         )
                     )
                     break
-                except TimeoutError as e:
+                except Exception as e:
                     logger.error(e)
+                    await sleep(5)
             for trade in trades:
                 influxdb.write(
                     [
@@ -74,7 +75,7 @@ async def record_exchange(
                 from_id = last["id"]
                 break
             else:
-                logger.info("waiting for trades...")
+                logger.info(f"symbol: {symbol} waiting for trades...")
                 await sleep(60)
 
     while True:
@@ -98,8 +99,9 @@ async def record_exchange(
                     )
                 )
                 break
-            except TimeoutError as e:
+            except Exception as e:
                 logger.error(e)
+                await sleep(5)
         trades_len = float(len(trades))
         wait_interval = max(
             0.1,
