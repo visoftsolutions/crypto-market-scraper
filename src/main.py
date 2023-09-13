@@ -1,8 +1,10 @@
+import argparse
 import asyncio
 import os
 import ccxt.pro as ccxt
 from logging import Logger
 from db import InfluxDb
+from datetime import datetime
 from handler import record_exchange
 from utils import datetime_string_to_timestamp_ms, get_logger
 
@@ -10,11 +12,6 @@ ORG = os.getenv("DOCKER_INFLUXDB_INIT_ORG")
 TOKEN = os.getenv("DOCKER_INFLUXDB_INIT_ADMIN_TOKEN")
 INFLUXDB_URL = os.getenv("CMS_INFLUXDB_URL")
 DESIRED_AMOUNT = os.getenv("CMS_DESIRED_AMOUNT")
-EXCHANGE_NAME = "binance"
-MEASUREMENT_NAME = "trade"
-SYMBOLS = ["BTC/USDT", "ETH/USDT", "MATIC/USDT"]
-DATE_STR = "2023-09-13 08:05:00"
-LIMIT = 1000
 
 
 async def start(
@@ -59,11 +56,50 @@ async def shutdown(loop, exchange: ccxt.Exchange):
     logger.info("Shutdown complete.")
 
 
-if __name__ == "__main__":
-    logger = get_logger()
+def setup_args():
+    parser = argparse.ArgumentParser(description="Arguments for exchange record task.")
+    parser.add_argument(
+        "-x",
+        "--exchange-name",
+        dest="exchange_name",
+        type=str,
+        help="Name of the exchange",
+    )
+    parser.add_argument(
+        "-m",
+        "--measurement-name",
+        dest="measurement_name",
+        type=str,
+        help="Name of the measurement",
+    )
+    parser.add_argument(
+        "-s",
+        "--symbols",
+        dest="symbols",
+        nargs="+",
+        type=str,
+        help="List of symbols (e.g., BTC/USDT ETH/USDT)",
+    )
+    parser.add_argument(
+        "-d",
+        "--date-str",
+        dest="date_str",
+        type=str,
+        default=datetime.now().strftime(r"%Y-%m-%d %H:%M:%S"),
+        help='Date in string format (e.g., "2023-01-01 00:00:00")',
+    )
+    parser.add_argument(
+        "-l", "--limit", dest="limit", type=int, help="Limit as an integer"
+    )
+    return parser.parse_args()
 
+
+if __name__ == "__main__":
+    args = setup_args()
+
+    logger = get_logger()
     loop = asyncio.get_event_loop()
-    exchange: ccxt.Exchange = getattr(ccxt, EXCHANGE_NAME)()
+    exchange: ccxt.Exchange = getattr(ccxt, args.exchange_name)()
 
     tasks = [
         start(
@@ -72,16 +108,16 @@ if __name__ == "__main__":
             ORG,
             TOKEN,
             INFLUXDB_URL,
-            EXCHANGE_NAME,
-            MEASUREMENT_NAME,
+            args.exchange_name,
+            args.measurement_name,
             [("symbol", symbol)],
             float(DESIRED_AMOUNT),
             exchange,
             symbol,
-            datetime_string_to_timestamp_ms(DATE_STR),
-            LIMIT,
+            datetime_string_to_timestamp_ms(args.date_str),
+            args.limit,
         )
-        for i, symbol in enumerate(SYMBOLS)
+        for i, symbol in enumerate(args.symbols)
     ]
 
     try:
