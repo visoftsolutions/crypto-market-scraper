@@ -36,28 +36,3 @@ services:
         "-l",
         "1000",
       ]
-
-  cms-kraken:
-    container_name: cms-kraken
-    hostname: cms-kraken
-    build:
-      context: .
-    depends_on:
-      - influxdb
-    env_file:
-      - ./.env
-    command:
-      [
-        "-x",
-        "kraken",
-        "-m",
-        "trades",
-        "-s",
-        "BTC/USDT",
-        "ETH/USDT",
-        "MATIC/USDT",
-        "DOT/USDT",
-        "ADA/USDT",
-        "-l",
-        "1000",
-      ]
