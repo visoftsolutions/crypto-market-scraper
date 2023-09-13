@@ -1,6 +1,6 @@
 import ccxt.pro as ccxt
 import logging
-from asyncio import sleep
+from asyncio import sleep, TimeoutError
 from datetime import datetime
 from dataclasses import dataclass
 from db import InfluxDb
@@ -28,7 +28,7 @@ async def record_exchange(
     since: int | None = None,
     limit: int | None = None,
 ):
-    logger.info(influxdb.create_bucket_if_not_exist())
+    influxdb.create_bucket_if_not_exist()
     wait_interval = 5
 
     last = influxdb.get_last()
@@ -36,23 +36,28 @@ async def record_exchange(
         from_id = last["id"]
     else:
         while True:
-            trades = list(
-                map(
-                    lambda trade: Trade(
-                        trade["timestamp"],
-                        trade["datetime"],
-                        trade["symbol"],
-                        trade["id"],
-                        trade["side"],
-                        trade["price"],
-                        trade["amount"],
-                        trade["cost"],
-                    ),
-                    await exchange.fetch_trades(
-                        symbol=symbol, since=since, limit=limit
-                    ),
-                )
-            )
+            while True:
+                try:
+                    trades = list(
+                        map(
+                            lambda trade: Trade(
+                                trade["timestamp"],
+                                trade["datetime"],
+                                trade["symbol"],
+                                trade["id"],
+                                trade["side"],
+                                trade["price"],
+                                trade["amount"],
+                                trade["cost"],
+                            ),
+                            await exchange.fetch_trades(
+                                symbol=symbol, since=since, limit=limit
+                            ),
+                        )
+                    )
+                    break
+                except TimeoutError as e:
+                    logger.error(e)
             for trade in trades:
                 influxdb.write(
                     [
@@ -73,23 +78,28 @@ async def record_exchange(
                 await sleep(60)
 
     while True:
-        trades = list(
-            map(
-                lambda trade: Trade(
-                    trade["timestamp"],
-                    trade["datetime"],
-                    trade["symbol"],
-                    trade["id"],
-                    trade["side"],
-                    trade["price"],
-                    trade["amount"],
-                    trade["cost"],
-                ),
-                await exchange.fetch_trades(
-                    symbol=symbol, limit=limit, params={"fromId": from_id}
-                ),
-            )
-        )
+        while True:
+            try:
+                trades = list(
+                    map(
+                        lambda trade: Trade(
+                            trade["timestamp"],
+                            trade["datetime"],
+                            trade["symbol"],
+                            trade["id"],
+                            trade["side"],
+                            trade["price"],
+                            trade["amount"],
+                            trade["cost"],
+                        ),
+                        await exchange.fetch_trades(
+                            symbol=symbol, limit=limit, params={"fromId": from_id}
+                        ),
+                    )
+                )
+                break
+            except TimeoutError as e:
+                logger.error(e)
         trades_len = float(len(trades))
         wait_interval = max(
             0.1,
@@ -99,7 +109,7 @@ async def record_exchange(
             )
             / 2.0,
         )
-        logger.info(f"{wait_interval} --> {len(trades)}")
+        logger.info(f"{wait_interval} --> symbol: {symbol} lenght: {len(trades)}")
         for trade in trades:
             influxdb.write(
                 [
