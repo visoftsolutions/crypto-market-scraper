@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: crypto-market-recorder
 
 resources:
+  - ./resources/pvc.yaml
   - ./resources/influxdb.yaml
   - ./resources/binance.yaml
 
