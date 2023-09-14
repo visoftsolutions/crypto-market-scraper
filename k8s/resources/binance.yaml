@@ -44,15 +44,15 @@ spec:
               "WAVES/USDT",
               "ADA/USDT",
               "FTM/USDT",
-              "-d",
-              "2023-09-13 09:00:00",
+              "-b",
+              "400",
               "-l",
-              "1000",
+              "800",
             ]
           resources:
             requests:
-              memory: 100Mi
-              cpu: 100m
-            limits:
               memory: 200Mi
               cpu: 200m
+            limits:
+              memory: 300Mi
+              cpu: 300m

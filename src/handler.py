@@ -22,7 +22,7 @@ class Trade:
 async def record_exchange(
     logger: logging.Logger,
     influxdb: InfluxDb,
-    desired_amount: float,
+    batch: float,
     exchange: Exchange,
     symbol: str,
     since: int | None = None,
@@ -107,7 +107,7 @@ async def record_exchange(
             0.1,
             (
                 wait_interval
-                + wait_interval * 2.0 * sigmoid((desired_amount - trades_len) / 100.0)
+                + wait_interval * 2.0 * sigmoid((batch - trades_len) / 100.0)
             )
             / 2.0,
         )

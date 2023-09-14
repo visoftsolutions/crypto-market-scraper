@@ -11,7 +11,6 @@ from utils import datetime_string_to_timestamp_ms, get_logger
 ORG = os.getenv("DOCKER_INFLUXDB_INIT_ORG")
 TOKEN = os.getenv("DOCKER_INFLUXDB_INIT_ADMIN_TOKEN")
 INFLUXDB_URL = os.getenv("CMS_INFLUXDB_URL")
-DESIRED_AMOUNT = os.getenv("CMS_DESIRED_AMOUNT")
 
 
 async def start(
@@ -23,7 +22,7 @@ async def start(
     exchange_name: str,
     measurement_name: str,
     tags: list[(str, str)],
-    desired_amount: float,
+    batch: float,
     exchange: ccxt.Exchange,
     symbol: str,
     since: int | None = None,
@@ -40,7 +39,7 @@ async def start(
             measurement_name,
             tags,
         ),
-        desired_amount,
+        batch,
         exchange,
         symbol,
         since,
@@ -89,6 +88,9 @@ def setup_args():
         help='Date in string format (e.g., "2023-01-01 00:00:00")',
     )
     parser.add_argument(
+        "-b", "--batch", dest="batch", type=float, help="Batch as an float"
+    )
+    parser.add_argument(
         "-l", "--limit", dest="limit", type=int, help="Limit as an integer"
     )
     return parser.parse_args()
@@ -111,7 +113,7 @@ if __name__ == "__main__":
             args.exchange_name,
             args.measurement_name,
             [("symbol", symbol)],
-            float(DESIRED_AMOUNT),
+            args.batch,
             exchange,
             symbol,
             datetime_string_to_timestamp_ms(args.date_str),

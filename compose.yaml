@@ -1,7 +1,7 @@
 services:
   influxdb:
     container_name: cms-influxdb
-    hostname: cms-influxdb
+    hostname: influxdb-service
     image: influxdb:2.7
     env_file:
       - ./.env
@@ -10,9 +10,9 @@ services:
     ports:
       - 8086:8086
 
-  cms-binance:
+  binance:
     container_name: cms-binance
-    hostname: cms-binance
+    hostname: binance-service
     build:
       context: .
     depends_on:
@@ -27,12 +27,8 @@ services:
         "trades",
         "-s",
         "BTC/USDT",
-        "ETH/USDT",
-        "MATIC/USDT",
-        "DOT/USDT",
-        "WAVES/USDT",
-        "ADA/USDT",
-        "FTM/USDT",
+        "-b",
+        "400",
         "-l",
-        "1000",
+        "800",
       ]
