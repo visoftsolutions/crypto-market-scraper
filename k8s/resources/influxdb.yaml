@@ -13,6 +13,10 @@ spec:
       labels:
         app: influxdb
     spec:
+      volumes:
+        - name: influxdb-pv
+          persistentVolumeClaim:
+            claimName: influxdb-pvc
       containers:
         - name: influxdb
           image: influxdb:2.7
@@ -23,13 +27,16 @@ spec:
                 name: config
           ports:
             - containerPort: 8086
+          volumeMounts:
+            - mountPath: /var/lib/influxdb2
+              name: influxdb-pv
           resources:
             requests:
+              memory: 500Mi
+              cpu: 500m
+            limits:
               memory: 1000Mi
               cpu: 1000m
-            limits:
-              memory: 2000Mi
-              cpu: 2000m
 ---
 apiVersion: v1
 kind: Service
