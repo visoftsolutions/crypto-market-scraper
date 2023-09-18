@@ -13,10 +13,6 @@ spec:
       labels:
         app: binance
     spec:
-      volumes:
-        - name: influxdb-pv
-          persistentVolumeClaim:
-            claimName: influxdb-pvc
       containers:
         - name: binance
           image: registry.internal.visoft.solutions/crypto-market-recorder
@@ -25,9 +21,6 @@ spec:
                 name: secrets
             - configMapRef:
                 name: config
-          volumeMounts:
-            - mountPath: /var/lib/influxdb2
-              name: influxdb-pv
           command:
             [
               "python",
